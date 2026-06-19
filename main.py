@@ -59,7 +59,7 @@ if "initialized" not in st.session_state:
     st.session_state.log = ["인원수를 선택하고 게임을 시작해주세요!"]
 
 # --- 게임 시작 전 설정 화면 ---
-if not st.session_state.game_started:
+if not st.session_state.get("game_started", False):
     st.subheader("👥 대결 설정")
     player_count = st.radio("플레이어 수를 선택하세요", [2, 3, 4], index=0, horizontal=True)
     
