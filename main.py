@@ -126,7 +126,8 @@ with col_left:
 
 # 오른쪽: 단계별 플레이 구역
 with col_right:
-    st.markdown(f"<div class='highlight-box'><h3>{phases[st.session_state.turn_phase]}</h3>"
+    current_phase_index = st.session_state.get("turn_phase", 0)
+    st.markdown(f"<div class='highlight-box'><h3>{phases[current_phase_index]}</h3>"
                 f"현재 순서: <b>{current_player_id}</b>의 차례입니다.</div>", unsafe_allow_html=True)
     
     # ----------------------------------------
