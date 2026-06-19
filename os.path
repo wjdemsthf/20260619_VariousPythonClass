@@ -1,0 +1,2 @@
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, "..", "clean_fifa_worldcup_historical_data.csv")
