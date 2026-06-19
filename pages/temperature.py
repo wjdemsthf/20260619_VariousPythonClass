@@ -91,7 +91,7 @@ try:
         day_df = df[(df['월'] == selected_month) & (df['일'] == selected_day)]
         
         # 그래프 플로팅
-        fig_day = px.line(day_df, x='연o', y=['평균기온', '최저기온', '최고기온'],
+        fig_day = px.line(day_df, x='연도', y=['평균기온', '최저기온', '최고기온'],
                           title=f"1907년~2026년 역대 {selected_month}월 {selected_day}일 기온 역사 추이")
         st.plotly_chart(fig_day, use_container_width=True)
         
