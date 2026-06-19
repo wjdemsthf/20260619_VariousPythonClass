@@ -1,15 +1,28 @@
 import streamlit as st
 import random
 
-# 1. 페이지 설정 및 네온 스타일 커스텀 CSS (화려함 극대화)
-st.set_page_config(page_title="포켓몬 스플렌더: 프리미엄 에볼루션", layout="wide")
+# 1. 페이지 설정 및 네온 스타일 커스텀 CSS (화려함 및 자원 가독성 극대화)
+st.set_page_config(page_title="포켓몬 스플렌더: 프리미엄 마스터즈", layout="wide")
 st.markdown("""
     <style>
     /* 기본 테마 및 배경 */
     .stApp { background-color: #0B0C10; color: #C5C6C7; font-family: 'Helvetica Neue', Arial, sans-serif; }
     
-    /* 대시보드 및 메트릭 */
-    div[data-testid="stMetric"] { background: linear-gradient(145deg, #1F2833, #151B24); border: 2px solid #45A29E; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(69, 162, 158, 0.2); }
+    /* 대시보드 및 메트릭 기본 레이아웃 개조 */
+    div[data-testid="stMetric"] { background: linear-gradient(145deg, #151B24, #0F131A); padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+    
+    /* 자원별 가독성 전용 네온 스킨 매핑 */
+    .ball-일반 { border: 2px solid #FF4B4B !important; color: #FF6B6B !important; }
+    .ball-수퍼 { border: 2px solid #1C7ED6 !important; color: #339AF0 !important; }
+    .ball-하이퍼 { border: 2px solid #FCC419 !important; color: #FFD43B !important; }
+    .ball-사파리 { border: 2px solid #37B24D !important; color: #51CF66 !important; }
+    .ball-다이브 { border: 2px solid #1098AD !important; color: #22B8CF !important; }
+    .ball-마스터 { border: 2px solid #9C36B5 !important; color: #CC5DE8 !important; }
+    
+    /* 자원 스탯 보드 내 내부 텍스트 정렬 */
+    .resource-card { padding: 8px; border-radius: 8px; text-align: center; margin-bottom: 5px; background: #1A1F26; }
+    .resource-title { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+    .resource-value { font-size: 18px; font-weight: 800; }
     
     /* 범용 버튼 스타일 */
     .stButton>button { background: linear-gradient(135deg, #1F2833, #2C3E50); color: #66FCF1; border: 1px solid #45A29E; border-radius: 8px; font-weight: bold; transition: all 0.3s ease; }
@@ -18,24 +31,29 @@ st.markdown("""
     /* 알림창 스킨 */
     .highlight-box { background: linear-gradient(90deg, #1F2833, #0B0C10); border-left: 6px solid #66FCF1; padding: 18px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     
-    /* 1단계 등급 카드 (그린 네온) */
+    /* 단계별 카드 그래디언트 외곽선 */
     .tier-1 { background-color: #111A1E; border: 2px solid #2ECC71; padding: 15px; border-radius: 12px; box-shadow: 0 0 8px rgba(46, 204, 113, 0.3); margin-bottom: 12px; }
-    /* 2단계 등급 카드 (블루 네온) */
     .tier-2 { background-color: #121622; border: 2px solid #3498DB; padding: 15px; border-radius: 12px; box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); margin-bottom: 12px; }
-    /* 3단계 등급 카드 (퍼플 핑크 네온) */
     .tier-3 { background-color: #1C121E; border: 2px solid #9B59B6; padding: 15px; border-radius: 12px; box-shadow: 0 0 12px rgba(155, 89, 182, 0.5); margin-bottom: 12px; }
     
-    /* 플레이어 뱃지 */
     .player-badge { font-size: 22px; font-weight: bold; color: #66FCF1; text-shadow: 0 0 10px rgba(102, 252, 241, 0.6); animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; text-shadow: 0 0 18px rgba(102, 252, 241, 0.9); } 100% { opacity: 0.8; } }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚡ 포켓몬 스플렌더: 프리미엄 마스터즈 (Pokémon Splendor: Premium Masters)")
+st.title("⚡ 포켓몬 스플렌더: 프리미엄 마스터즈")
 
 BALL_TYPES = ["몬스터볼", "수퍼볼", "하이퍼볼", "사파리볼", "다이브볼", "마스터볼"]
+BALL_STYLES = {
+    "몬스터볼": {"class": "ball-일반", "prefix": "🔴"},
+    "수퍼볼": {"class": "ball-수퍼", "prefix": "🔵"},
+    "하이퍼볼": {"class": "ball-하이퍼", "prefix": "🟡"},
+    "사파리볼": {"class": "ball-사파리", "prefix": "🟢"},
+    "다이브볼": {"class": "ball-다이브", "prefix": "🌊"},
+    "마스터볼": {"class": "ball-마스터", "prefix": "🟣"}
+}
 
-# 2. 고화력 밸런스형 3단계 진화 체인 데이터 더미 세팅
+# 2. 3단계 대진화 트랙 고화력 덱 구성
 TOTAL_POKEMON_DECK = {
     1: [
         {"id": 1, "name": "파이리", "cost": {"몬스터볼": 3}, "bonus": "몬스터볼", "points": 0, "stage": 1},
@@ -60,12 +78,11 @@ TOTAL_POKEMON_DECK = {
     ]
 }
 
-# 세션 구조 초기화
 if "initialized" not in st.session_state:
     st.session_state.initialized = True
     st.session_state.game_started = False
     st.session_state.current_turn = 0
-    st.session_state.turn_phase = 0 # 0: 볼 수집, 1: 상점 통합 구매 및 턴 종료
+    st.session_state.turn_phase = 0
     st.session_state.selected_balls = []
     
     st.session_state.market_balls = {b: 7 for b in BALL_TYPES if b != "마스터볼"}
@@ -88,7 +105,6 @@ if "turn_phase" not in st.session_state: st.session_state.turn_phase = 0
 if "selected_balls" not in st.session_state: st.session_state.selected_balls = []
 
 def finish_turn():
-    # 턴 마무리 규칙 연산 처리
     curr_p = f"Player {st.session_state.current_turn + 1}"
     total_balls = sum(st.session_state.players[curr_p]["balls"].values())
     if total_balls > 8:
@@ -98,7 +114,7 @@ def finish_turn():
                 st.session_state.players[curr_p]["balls"][b] -= 1
                 st.session_state.market_balls[b] += 1
                 over_count -= 1
-        st.session_state.log.insert(0, f"⚠️ {curr_p}님의 가방이 가득 차 초과 자원이 필드로 자동 폐기 분출되었습니다.")
+        st.session_state.log.insert(0, f"⚠️ {curr_p}님의 가방이 가득 차 초과 자원이 필드로 자동 반납되었습니다.")
         
     st.session_state.turn_phase = 0
     st.session_state.selected_balls = []
@@ -111,7 +127,7 @@ def refill_market(stage, index):
     else:
         st.session_state.field_market[stage].pop(index)
 
-# --- 트레이너 대기실 엔트리 등록 ---
+# --- 트레이너 등록 대기실 ---
 if not st.session_state.get("game_started", False):
     st.subheader("👥 리그 참전 트레이너 인원 선택")
     p_count = st.radio("플레이어 인원수", [2, 3, 4], index=0, horizontal=True)
@@ -130,33 +146,46 @@ if not st.session_state.get("game_started", False):
         st.rerun()
     st.stop()
 
-# 트레이너 데이터 연결 변수
 current_player_id = f"Player {st.session_state.current_turn + 1}"
 p_data = st.session_state.players[current_player_id]
 phases = ["🟢 PHASE 1: 자원 보급 스테이션", "🔵 PHASE 2: 통합 진화 포획 마켓플레이스 (1~3단계 전체 거래 가능)"]
 
 col_left, col_right = st.columns([1, 2])
 
-# 왼쪽 상황판 대시보드 스킨 변경
+# [가독성 패치 반영] 왼쪽 상황판 대시보드 리팩토링
 with col_left:
-    st.markdown("### 🏆 실시간 랭킹 상황판")
+    st.markdown("### 🏆 실시간 트레이너 랭킹")
     for p_id, data in st.session_state.players.items():
         is_curr = "▶️ " if p_id == current_player_id else ""
         badge_class = "class='player-badge'" if p_id == current_player_id else ""
         
-        with st.expander(f"{is_curr}{p_id} ({data['score']} 점)", expanded=(p_id == current_player_id)):
+        with st.expander(f"{is_curr}{p_id} (⭐ {data['score']} 점)", expanded=(p_id == current_player_id)):
             if p_id == current_player_id:
                 st.markdown(f"<div {badge_class}>🌟 당신의 차례입니다!</div>", unsafe_allow_html=True)
-            st.caption(f"🎒 가방 자원 게이지: {sum(data['balls'].values())} / 8")
             
-            b_cols = st.columns(3)
+            # 가방 용량 시각화 게이지 바 패치
+            total_b = sum(data["balls"].values())
+            st.markdown(f"**🎒 가방 보관 점유율** ({total_b} / 8 개)")
+            st.progress(min(1.0, total_b / 8.0))
+            
+            # [핵심] 자원 상태 카드로 가독성 높인 파트 (HTML 커스텀 바인딩)
+            st.markdown("<div style='margin-top:10px;'><b>🎒 소지품 정보 (보유량 + 영구할인 패시브)</b></div>", unsafe_allow_html=True)
+            
+            res_cols = st.columns(3)
             for idx, b_name in enumerate(BALL_TYPES):
-                b_cols[idx % 3].metric(b_name, f"{data['balls'][b_name]}개")
-            st.markdown("**💎 무한 할인 보너스 패시브**")
-            bonus_cols = st.columns(3)
-            for idx, b_name in enumerate(BALL_TYPES):
-                bonus_cols[idx % 3].metric(b_name[:3], f"+{data['bonuses'][b_name]}")
-            st.markdown(f"**🐾 도감 등록 포켓몬:** {', '.join(data['captured']) if data['captured'] else '없음'}")
+                style_info = BALL_STYLES[b_name]
+                ball_count = data["balls"][b_name]
+                bonus_count = data["bonuses"][b_name]
+                
+                # 가방 수량과 무한 할인 패시브를 다채롭고 큰 폰트로 통합 명시
+                res_cols[idx % 3].markdown(f"""
+                <div class="resource-card {style_info['class']}">
+                    <div class="resource-title">{style_info['prefix']} {b_name}</div>
+                    <div class="resource-value">{ball_count} <span style="font-size:12px; opacity:0.8;">(+{bonus_count}💎)</span></div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            st.markdown(f"<div style='margin-top:10px;'><b>🐾 도감 획득 내역:</b> {', '.join(data['captured']) if data['captured'] else '비어 있음'}</div>", unsafe_allow_html=True)
 
 # 오른쪽 컨트롤 타워
 with col_right:
@@ -165,15 +194,14 @@ with col_right:
                 f"현재 액션 진행 중인 마스터: <b>{current_player_id}</b></div>", unsafe_allow_html=True)
     
     # ----------------------------------------
-    # [PHASE 0] 자원 보급 스테이션 (선택 해제 탑재)
+    # [PHASE 0] 자원 보급 스테이션
     # ----------------------------------------
     if current_phase_idx == 0:
         st.subheader("🔴 보급소 필드 현황 및 장바구니")
         selected = st.session_state.selected_balls
         
-        # [신규 기능 2번 적용] 장바구니 리스트업 및 개별 선택 해제[X] 연산 버튼
         if selected:
-            st.write("**현재 바구니 내역 (클릭 시 가방에서 해제 내려놓기):**")
+            st.write("**현재 바구니 내역 (클릭 시 가방에서 취소 반납):**")
             basket_cols = st.columns(len(selected))
             for s_idx, b_item in enumerate(selected):
                 if basket_cols[s_idx].button(f"❌ {b_item}", key=f"cancel_{b_item}_{s_idx}"):
@@ -188,10 +216,11 @@ with col_right:
         grid_b = st.columns(3)
         for idx, b_name in enumerate(BALL_TYPES):
             stock = st.session_state.market_balls[b_name]
+            style_info = BALL_STYLES[b_name]
             with grid_b[idx % 3]:
-                st.markdown(f"**{b_name}** (필드 잔량: {stock}개)")
+                st.markdown(f"### {style_info['prefix']} **{b_name}**")
+                st.markdown(f"🏟️ 필드 매장 잔량: **{stock}**개")
                 
-                # 정밀 하드웨어 수집 잠금 제어 엔진
                 btn_disabled = False
                 if stock <= 0: btn_disabled = True
                 if has_two_same: btn_disabled = True
@@ -200,7 +229,7 @@ with col_right:
                 if b_name in selected and len(selected) == 1 and stock < 4: btn_disabled = True
                 if b_name in selected and len(selected) >= 2: btn_disabled = True
                 
-                if st.button(f"➕ {b_name} 선택", key=f"pick_{b_name}_{idx}", disabled=btn_disabled):
+                if st.button(f"➕ 선택하기", key=f"pick_{b_name}_{idx}", disabled=btn_disabled):
                     st.session_state.selected_balls.append(b_name)
                     st.rerun()
                     
@@ -209,7 +238,7 @@ with col_right:
         if b_actions[0].button("✔️ 서로 다른 3종 확정 수령", disabled=not (len(set(selected)) == 3 and "마스터볼" not in selected)):
             for b in selected: st.session_state.market_balls[b] -= 1; p_data["balls"][b] += 1
             st.session_state.log.insert(0, f"🔹 {current_player_id}님이 다른 볼 3종을 수령했습니다.")
-            st.session_state.turn_phase = 1 # 즉시 구매단계 페이즈 진입 허용
+            st.session_state.turn_phase = 1
             st.rerun()
             
         if len(selected) == 1 and "마스터볼" not in selected:
@@ -231,11 +260,10 @@ with col_right:
             st.rerun()
 
     # ----------------------------------------
-    # [PHASE 1] 통합 진화 포획 마켓플레이스 (신규 기획 3번 통합 적용)
+    # [PHASE 1] 통합 진화 포획 마켓플레이스
     # ----------------------------------------
     elif current_phase_idx == 1:
         st.subheader("🪐 전 등급 올인원 프리미엄 조달 시장")
-        st.caption("비용 충족 시 원하는 티어의 야생 포획 및 상위 진화(이전 조건 만족 시)를 순서 제약 없이 즉시 일괄 처리 가능합니다.")
         
         # --- [1단계 시장 섹션 배치] ---
         st.markdown(f"##### 🟢 야생 개체 [1단계 코어] (더미 잔여: {len(st.session_state.decks[1])}장)")
@@ -252,7 +280,7 @@ with col_right:
                     if hold < need: shortage += (need - hold)
                     cost_info.append(f"▫️ {b_t}: {req}개 (보유:{hold}/할인:{disc})")
                 st.markdown("\n".join(cost_info))
-                can_p1 = p_data["balls"]["mar" if "mar" in b_t else "마스터볼"] >= shortage
+                can_p1 = p_data["balls"]["마스터볼"] >= shortage
                 
                 if st.button(f"⚽ {p1['name']} 포획", key=f"buy_m1_{p1['id']}", disabled=not can_p1):
                     p_data["balls"]["마스터볼"] -= shortage; st.session_state.market_balls["마스터볼"] += shortage
